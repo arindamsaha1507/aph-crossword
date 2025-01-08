@@ -1,0 +1,29 @@
+.crossword_outer {
+  display: grid;
+  grid-template-columns: repeat(15, 40px);
+  grid-template-rows: repeat(15, 40px);
+  gap: 0; /* No spacing between cells */
+  background-color: gray;
+}
+
+.crossword_block {
+  height: 40px; /* Fixed height */
+  width: 40px; /* Fixed width */
+  border: 1px solid black; /* Border for visibility */
+  font-size: 20px;
+  display: flex; /* Flexbox for centering */
+  align-items: center; /* Centers the main content */
+  justify-content: center; /* Centers the main content */
+  position: relative; /* Allows positioning child elements */
+  box-sizing: border-box; /* Includes border in dimensions */
+  overflow: hidden; /* Prevents content overflow */
+}
+
+.clue_number {
+  position: absolute; /* Allows positioning within the parent */
+  top: 1px; /* Adjust to move closer to the top */
+  left: 1px; /* Adjust to move closer to the left */
+  font-size: 10px; /* Smaller font size for clue numbers */
+  font-weight: bold; /* Make the numbers more visible */
+  color: black; /* Clue number color */
+}

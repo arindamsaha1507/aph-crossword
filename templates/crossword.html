@@ -1,0 +1,20 @@
+{% extends "home.html" %} {% block content %}
+
+<link
+  href="{{ url_for('static', filename='css/output.css') }}"
+  rel="stylesheet"
+/>
+
+<h1>Crossword</h1>
+
+<div class="crossword_outer">
+  <!-- Generate the grid using Jinja -->
+  {% for i in range(rows) %} {% for j in range(cols) %}
+  <div class="crossword_block">
+    <span class="clue_number">{{ j }}</span>
+    {{i}}
+  </div>
+  {% endfor %}{% endfor %}
+</div>
+
+{% endblock content %}
