@@ -44,13 +44,13 @@ class Word:
     word: str
     intersection_points: list[int] = field(init=False, default_factory=list)
     position: Position = field(init=False)
-    direction: str = field(init=False)
+    direction: bool = field(init=False)
 
     def __post_init__(self):
         self.capitalize()
         self.remove_spaces()
         self.position = Position(-1, -1)
-        self.direction = "D"
+        self.direction = True
 
     @property
     def length(self) -> int:
@@ -96,328 +96,202 @@ class Word:
 
 
 @dataclass
-class Tree:
-    """Tree class"""
+class Cell:
+    """Cell class"""
 
-    words: list[Word]
-    links: dict[tuple[Word, Word], tuple[int, int]] = field(
-        init=False, default_factory=dict
-    )
-    tree: dict[tuple[Word, Word], tuple[int, int]] = field(
-        init=False, default_factory=dict
-    )
+    position: Position
+    letter: str
+    words: list[Word] = field(init=False, default_factory=list)
 
-    def __post_init__(self):
-        self.create_links()
-        self.create_tree()
+    def add_word(self, word: Word):
+        """Adds a word to the cell"""
 
-    def create_tree(self):
-        """Creates the tree"""
+        if len(self.words) == 2:
+            raise ValueError("Cell already has two words")
 
-        self.tree = {}
+        self.words.append(word)
 
-        links_copy = self.links.copy()
+    def is_word_in_cell(self, word: Word) -> bool:
+        """Returns whether the word is in the cell"""
 
-        while not self.check_if_tree_complete() and links_copy:
+        return word in self.words
 
-            link = random.choice(list(links_copy.keys()))
-            intersection = links_copy[link]
-            self.tree[link] = intersection
-            del links_copy[link]
+    def is_intersection(self) -> bool:
+        """Returns whether the cell is an intersection"""
 
-    def check_if_tree_complete(self) -> bool:
-        """Checks if the tree is complete"""
-
-        pairs = self.tree.keys()
-        tree_words = [pair[0] for pair in pairs] + [pair[1] for pair in pairs]
-        tree_words_set = set(tree_words)
-        given_word_set = set(self.words)
-
-        return tree_words_set == given_word_set
-
-    def create_links(self):
-        """Creates the links between the words"""
-
-        word_index1 = 0
-        word_index2 = word_index1 + 1
-
-        while word_index2 < len(self.words):
-            word1 = self.words[word_index1]
-            word2 = self.words[word_index2]
-
-            intersection = self.find_intersection(word1, word2)
-
-            if intersection != (-1, -1):
-                self.links[(word1, word2)] = intersection
-
-            word_index2 += 1
-
-            if word_index2 == len(self.words):
-                word_index1 += 1
-                word_index2 = word_index1 + 1
-
-    def find_intersection(self, word1: Word, word2: Word) -> tuple[int, int]:
-        """Finds the intersection between two words"""
-
-        common_letters = []
-        for letter in word1.letter_indices:
-            if letter in word2.letter_indices:
-                common_letters.append(letter)
-
-        if not common_letters:
-            return (-1, -1)
-
-        for letter in common_letters:
-
-            indices1 = word1.letter_indices[letter]
-            indices2 = word2.letter_indices[letter]
-
-            intersection1 = -1
-            intersection2 = -1
-
-            for index1 in indices1:
-                if index1 not in word1.intersection_points:
-                    intersection1 = index1
-                    break
-
-            for index2 in indices2:
-                if index2 not in word2.intersection_points:
-                    intersection2 = index2
-                    break
-
-            if (
-                intersection1 >= 0
-                and intersection2 >= 0
-                and intersection1 + intersection2 > 0
-            ):
-                word1.intersection_points.append(intersection1)
-                word2.intersection_points.append(intersection2)
-                return (intersection1, intersection2)
-
-        return (-1, -1)
+        return len(self.words) == 2
 
 
 @dataclass
 class Grid:
     """Grid class"""
 
-    tree: Tree
-    grid: dict[Position, str] = field(init=False, default_factory=dict)
-    grid_data: dict[Position, list[Word]] = field(init=False, default_factory=dict)
-    ordered_tree: list[tuple[tuple[Word, Word], tuple[int, int]]] = field(
-        init=False, default_factory=list
-    )
-    inserted_words: list[Word] = field(init=False, default_factory=list)
+    grid: list[Cell] = field(init=False, default_factory=list)
 
-    def __post_init__(self):
-
-        self.create_grid()
-
-        # attempt = 0
-        # success = False
-
-        # while not success and attempt < 100:
-        #     try:
-        #         self.create_grid()
-        #         success = True
-        #     except ValueError:
-        #         if attempt < 100:
-        #             attempt += 1
-        #             print("Failed to create grid in attempt", attempt)
-
-    def create_grid(self):
-        """Creates the grid"""
-
-        self.reorder_tree()
-        # print("Tree")
-        # print(self.tree.tree)
-        # print("Ordered tree")
-        # print(self.ordered_tree)
-
-        self.insert_word(self.ordered_tree[0][0][0], Position(0, 0), "A")
-        self.inserted_words.append(self.ordered_tree[0][0][0])
-
-        for pair, indices in self.ordered_tree:
-            self.insert_words(pair, indices)
-
-        self.normalize_grid()
-        # print(self.grid)
-        self.draw_grid()
-        print("Inserted Words", self.inserted_words)
-        print("Number of words inserted", len(self.inserted_words))
-
-    def draw_grid(self):
-        """Draws the grid"""
-
-        min_x = min([position.x for position in self.grid])
-        max_x = max([position.x for position in self.grid])
-        min_y = min([position.y for position in self.grid])
-        max_y = max([position.y for position in self.grid])
-
-        for y in range(min_y, max_y + 1):
-            for x in range(min_x, max_x + 1):
-                position = Position(x, y)
-                if position in self.grid:
-                    print(self.grid[position], end=" ")
-                else:
-                    print(" ", end=" ")
-            print()
-
-    def normalize_grid(self):
+    def normalize(self):
         """Normalizes the grid"""
 
-        min_x = min([position.x for position in self.grid.keys()])
-        min_y = min([position.y for position in self.grid.keys()])
+        x_min = min(cell.position.x for cell in self.grid)
+        y_min = min(cell.position.y for cell in self.grid)
 
-        new_grid = {}
-        new_grid_data = {}
+        for cell in self.grid:
+            cell.position.x -= x_min
+            cell.position.y -= y_min
 
-        for position, letter in self.grid.items():
-            new_position = Position(position.x - min_x, position.y - min_y)
-            new_grid[new_position] = letter
-            new_grid_data[new_position] = self.grid_data[position]
+    def draw(self):
+        """Draws the grid"""
 
-        self.grid = new_grid
-        self.grid_data = new_grid_data
+        self.normalize()
 
-    def insert_words(self, pair: tuple[Word, Word], indices: tuple[int, int]):
-        """Inserts the words into the grid"""
+        x_max = max(cell.position.x for cell in self.grid)
+        y_max = max(cell.position.y for cell in self.grid)
 
-        word1, word2 = pair
-        index1, index2 = indices
+        for y in range(y_max + 1):
+            for x in range(x_max + 1):
+                cell = next(
+                    (
+                        cell
+                        for cell in self.grid
+                        if cell.position.x == x and cell.position.y == y
+                    ),
+                    None,
+                )
 
-        # inserted_words = []
+                if cell:
+                    print(cell.letter, end=" ")
+                else:
+                    print(" ", end=" ")
 
-        # if len(self.grid) == 0:
-        #     self.insert_word(word1, Position(0, 0), "A")
-        #     inserted_words.append(word1)
-        #     # self.insert_words(pair, indices)
-        #     print("First word inserted")
-        #     return
+            print()
 
-        if word1 in self.inserted_words and word2 in self.inserted_words:
-            return
+    def add_first_word(self, word: Word):
+        """Adds the first word to the grid"""
 
-        if word1 not in self.inserted_words:
-            word_to_insert = word1
-            base_word = word2
-            new_word_index = index1
-            base_word_index = index2
-        elif word2 not in self.inserted_words:
-            word_to_insert = word2
-            base_word = word1
-            new_word_index = index2
-            base_word_index = index1
-        else:
-            return
-
-        if base_word.direction == "A":
-            new_position = Position(
-                base_word.position.x + base_word_index,
-                base_word.position.y - new_word_index,
-            )
-            new_direction = "D"
-        elif base_word.direction == "D":
-            new_position = Position(
-                base_word.position.x - new_word_index,
-                base_word.position.y + base_word_index,
-            )
-            new_direction = "A"
-
-        else:
-            raise ValueError("Invalid direction")
-
-        self.insert_word(word_to_insert, new_position, new_direction)
-
-    def insert_word(self, word: Word, position: Position, direction: str):
-        """Inserts the word into the grid"""
-
-        word.position = position
-        word.direction = direction
-
-        grid_copy = self.grid.copy()
-        grid_data_copy = self.grid_data.copy()
+        word.position = Position(0, 0)
+        word.direction = True
 
         for index, letter in enumerate(word.word):
-            if direction == "A":
-                new_position = Position(position.x + index, position.y)
-            elif direction == "D":
-                new_position = Position(position.x, position.y + index)
-            else:
-                raise ValueError("Invalid direction")
+            position = Position(index, 0)
+            cell = Cell(position, letter)
+            cell.add_word(word)
+            self.grid.append(cell)
 
-            if new_position in self.grid:
-                if self.grid[new_position] != letter:
-                    self.grid = grid_copy
-                    self.grid_data = grid_data_copy
-                    return
+    def get_intersection_points(self, word: Word) -> list[tuple[Position, int]]:
+        """Returns the intersection points of the word"""
 
-            self.grid[new_position] = letter
-            if new_position in self.grid_data:
-                self.grid_data[new_position].append(word)
-            else:
-                self.grid_data[new_position] = [word]
+        intersection_points = []
 
-        self.inserted_words.append(word)
+        for cell in self.grid:
 
-    def reorder_tree(self):
-        """Reorders the tree"""
-
-        tree_list = list(self.tree.tree.items())
-
-        ordered_tree = self.ordered_tree.copy()
-        # target_word = ""
-
-        for index, item in enumerate(tree_list):
-            if index == 0:
-                ordered_tree.append(item)
-                # target_word = item[0][1]
+            if cell.is_intersection():
                 continue
 
-            # print(target_word, item)
+            if cell.letter in word.word:
+                letter_indices = word.letter_indices[cell.letter]
 
-            # for internal_index, internal_item in enumerate(tree_list):
-            for internal_item in tree_list:
+                for index in letter_indices:
+                    if cell.position.x == index:
+                        intersection_points.append((cell.position, index))
 
-                internal_words = set(internal_item[0])
+        return intersection_points
 
-                existing_tuples = list([pair[0] for pair in ordered_tree])
-                existing_words = list([word[0] for word in existing_tuples])
-                existing_words += list([word[1] for word in existing_tuples])
-                existing_words = set(existing_words)
+    def add_to_grid(
+        self, word: Word, intersection_point: tuple[Position, int]
+    ) -> list[Cell]:
+        """Adds the word to the grid"""
 
-                if existing_words.intersection(internal_words):
-                    if internal_item not in ordered_tree:
-                        ordered_tree.append(internal_item)
+        intersection_position = intersection_point[0]
+        intersetion_letter_index = intersection_point[1]
 
-        self.ordered_tree = ordered_tree
+        new_grid = self.grid.copy()
+
+        intersection_cell = next(
+            (cell for cell in new_grid if cell.position == intersection_position),
+            None,
+        )
+
+        if not intersection_cell:
+            raise ValueError("Intersection cell not found")
+
+        existing_word_direction = intersection_cell.words[0].direction
+        new_word_direction = not existing_word_direction
+        word.direction = new_word_direction
+
+        string = f"Trying to add {word.word} to {intersection_cell.words[0].word} at {intersection_position} with direction {new_word_direction}"
+        print(string)
+
+        for index, letter in enumerate(word.word):
+
+            if new_word_direction:
+                position = Position(
+                    intersection_position.x - intersetion_letter_index + index,
+                    intersection_position.y,
+                )
+
+            else:
+                position = Position(
+                    intersection_position.x,
+                    intersection_position.y - intersetion_letter_index + index,
+                )
+
+            existing_cell = next(
+                (cell for cell in new_grid if cell.position == position),
+                None,
+            )
+
+            if existing_cell:
+                if existing_cell.letter != letter:
+                    print(
+                        f"Conflict while adding {word} at {position}. The existing letter is {existing_cell.letter} and the new letter is {letter}"
+                    )
+                    return
+
+                existing_cell.add_word(word)
+
+            else:
+                new_cell = Cell(position, letter)
+                new_cell.add_word(word)
+                new_grid.append(new_cell)
+
+        return new_grid
+
+    def add_word(self, word: Word):
+        """Adds a word to the grid"""
+
+        if len(self.grid) == 0:
+            self.add_first_word(word)
+            return
+
+        intersection_points = self.get_intersection_points(word)
+
+        if not intersection_points:
+            print(f"Word {word} has no intersection points")
+            return
+
+        random.shuffle(intersection_points)
+
+        for intersection_point in intersection_points:
+            new_grid = self.add_to_grid(word, intersection_point)
+
+            if new_grid:
+                self.grid = new_grid
+                return
+
+        raise ValueError(f"Could not add word {word} due to conflicts")
 
 
 def main():
     """Main function"""
 
-    # for word in WORDS:
-    #     word_obj = Word(word)
-    #     print(word_obj.word)
-    #     print(word_obj.letter_indices)
-    #     print("==========")
+    grid = Grid()
 
-    tree = Tree([Word(word) for word in WORDS])
+    words = [Word(word) for word in WORDS]
+    random.shuffle(words)
 
-    # for pair, indices in tree.links.items():
-    #     print(pair[0].word, pair[1].word, indices)
-
-    # print("==========")
-
-    # for pair, indices in tree.tree.items():
-    #     print(pair[0].word, pair[1].word, indices)
-
-    grid = Grid(tree)
-    print(grid.ordered_tree)
-    print(len(grid.ordered_tree))
-    # print(len(grid.tree.tree))
-
-    print(grid.grid_data)
+    for word in words:
+        grid.add_word(word)
+        print("Added", word)
+        grid.draw()
 
 
 if __name__ == "__main__":
