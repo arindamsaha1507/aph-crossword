@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+import os
 import random
 
 WORDS = [
@@ -138,7 +139,7 @@ class Grid:
             cell.position.x -= x_min
             cell.position.y -= y_min
 
-    def draw(self):
+    def draw(self, filename: str = None):
         """Draws the grid"""
 
         self.normalize()
@@ -146,23 +147,30 @@ class Grid:
         x_max = max(cell.position.x for cell in self.grid)
         y_max = max(cell.position.y for cell in self.grid)
 
-        for y in range(y_max + 1):
-            for x in range(x_max + 1):
-                cell = next(
-                    (
-                        cell
-                        for cell in self.grid
-                        if cell.position.x == x and cell.position.y == y
-                    ),
-                    None,
-                )
+        with open(filename, "a") as file:
 
-                if cell:
-                    print(cell.letter, end=" ")
-                else:
-                    print(" ", end=" ")
+            for y in range(y_max + 1):
+                for x in range(x_max + 1):
+                    cell = next(
+                        (
+                            cell
+                            for cell in self.grid
+                            if cell.position.x == x and cell.position.y == y
+                        ),
+                        None,
+                    )
 
-            print()
+                    if cell:
+                        file.write(cell.letter)
+                        file.write(" ")
+                    else:
+                        file.write("  ")
+
+                file.write("\n")
+
+            file.write("\n")
+            file.write("=====================================")
+            file.write("\n")
 
     def add_first_word(self, word: Word):
         """Adds the first word to the grid"""
@@ -179,20 +187,33 @@ class Grid:
     def get_intersection_points(self, word: Word) -> list[tuple[Position, int]]:
         """Returns the intersection points of the word"""
 
+        print(f"Getting intersection points for {word}")
+        print("Grid:")
+
+        # for cell in self.grid:
+        #     print(cell.position, cell.letter)
+
         intersection_points = []
 
         for cell in self.grid:
 
+            # print(cell.position, cell.letter)
+            # print(intersection_points)
+
             if cell.is_intersection():
+                print("Cell is intersection")
                 continue
 
             if cell.letter in word.word:
+                print("Letter found in word")
                 letter_indices = word.letter_indices[cell.letter]
+                print("Letter indices", letter_indices)
 
                 for index in letter_indices:
-                    if cell.position.x == index:
-                        intersection_points.append((cell.position, index))
+                    # if cell.position.x == index:
+                    intersection_points.append((cell.position, index))
 
+        print("Intersection points", intersection_points)
         return intersection_points
 
     def add_to_grid(
@@ -233,6 +254,37 @@ class Grid:
                     intersection_position.x,
                     intersection_position.y - intersetion_letter_index + index,
                 )
+
+            neighbor_positions = [
+                Position(position.x, position.y - 1),
+                Position(position.x, position.y + 1),
+                Position(position.x - 1, position.y),
+                Position(position.x + 1, position.y),
+            ]
+
+            neighbor_cells = [
+                cell for cell in new_grid if cell.position in neighbor_positions
+            ]
+
+            for neighbor_cell in neighbor_cells:
+
+                print(
+                    "Neighbor cell",
+                    neighbor_cell.position,
+                    neighbor_cell.letter,
+                    neighbor_cell.words[0].direction,
+                )
+                print("New word direction", new_word_direction)
+
+                if (
+                    neighbor_cell.words[0].direction == new_word_direction
+                    and not neighbor_cell.is_intersection()
+                    and not neighbor_cell.is_word_in_cell(word)
+                ):
+                    print(
+                        f"Conflict while adding {word} at {position}. The neighbor cell {neighbor_cell.position} has the same direction"
+                    )
+                    return
 
             existing_cell = next(
                 (cell for cell in new_grid if cell.position == position),
@@ -279,6 +331,17 @@ class Grid:
 
         raise ValueError(f"Could not add word {word} due to conflicts")
 
+    @property
+    def dimensions(self) -> tuple[int, int]:
+        """Returns the dimensions of the grid"""
+
+        self.normalize()
+
+        x_max = max(cell.position.x for cell in self.grid)
+        y_max = max(cell.position.y for cell in self.grid)
+
+        return (x_max + 1, y_max + 1)
+
 
 def main():
     """Main function"""
@@ -291,8 +354,43 @@ def main():
     for word in words:
         grid.add_word(word)
         print("Added", word)
-        grid.draw()
+        grid.draw(filename="grid.txt")
+
+    number_of_words = len(words)
+    words_added = set(word for cell in grid.grid for word in cell.words)
+    number_of_words_added = len(words_added)
+
+    return {
+        "grid": grid,
+        "number_of_words": number_of_words,
+        "number_of_words_added": number_of_words_added,
+        "shape": grid.dimensions,
+    }
 
 
 if __name__ == "__main__":
-    main()
+
+    os.remove("grid.txt")
+
+    resutls = []
+
+    for _ in range(100):
+
+        try:
+            grid = main()
+            resutls.append(grid)
+
+        except ValueError as error:
+            print(error)
+            continue
+
+    if os.path.exists("results.txt"):
+        os.remove("results.txt")
+
+    with open("results.txt", "w", encoding="utf-8") as file:
+        for grid in resutls:
+            file.write(f"Number of words: {grid['number_of_words']}\n")
+            file.write(f"Number of words added: {grid['number_of_words_added']}\n")
+            file.write(f"Shape: {grid['shape']}\n")
+            file.write("\n")
+            # grid["grid"].draw(filename="results.txt")

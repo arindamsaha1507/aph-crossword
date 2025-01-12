@@ -1,0 +1,184 @@
+Number of words: 15
+Number of words added: 15
+Shape: (20, 12)
+
+Number of words: 15
+Number of words added: 14
+Shape: (24, 17)
+
+Number of words: 15
+Number of words added: 15
+Shape: (20, 18)
+
+Number of words: 15
+Number of words added: 15
+Shape: (19, 14)
+
+Number of words: 15
+Number of words added: 15
+Shape: (20, 20)
+
+Number of words: 15
+Number of words added: 14
+Shape: (12, 21)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (17, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 14)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 19)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (22, 21)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 17)
+
+Number of words: 15
+Number of words added: 15
+Shape: (15, 24)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 13)
+
+Number of words: 15
+Number of words added: 14
+Shape: (16, 17)
+
+Number of words: 15
+Number of words added: 15
+Shape: (20, 15)
+
+Number of words: 15
+Number of words added: 15
+Shape: (20, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (15, 14)
+
+Number of words: 15
+Number of words added: 15
+Shape: (17, 21)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 14)
+
+Number of words: 15
+Number of words added: 14
+Shape: (15, 23)
+
+Number of words: 15
+Number of words added: 15
+Shape: (24, 17)
+
+Number of words: 15
+Number of words added: 15
+Shape: (16, 24)
+
+Number of words: 15
+Number of words added: 14
+Shape: (18, 19)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 21)
+
+Number of words: 15
+Number of words added: 15
+Shape: (24, 20)
+
+Number of words: 15
+Number of words added: 15
+Shape: (20, 19)
+
+Number of words: 15
+Number of words added: 15
+Shape: (13, 23)
+
+Number of words: 15
+Number of words added: 15
+Shape: (21, 17)
+
+Number of words: 15
+Number of words added: 13
+Shape: (14, 15)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 18)
+
+Number of words: 15
+Number of words added: 15
+Shape: (15, 20)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (14, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (14, 25)
+
+Number of words: 15
+Number of words added: 15
+Shape: (19, 16)
+
+Number of words: 15
+Number of words added: 15
+Shape: (22, 18)
+
+Number of words: 15
+Number of words added: 15
+Shape: (13, 22)
+
+Number of words: 15
+Number of words added: 15
+Shape: (15, 25)
+
+Number of words: 15
+Number of words added: 15
+Shape: (18, 21)
+
+Number of words: 15
+Number of words added: 14
+Shape: (12, 22)
+
+Number of words: 15
+Number of words added: 13
+Shape: (13, 21)
+
+Number of words: 15
+Number of words added: 14
+Shape: (19, 18)
+
+Number of words: 15
+Number of words added: 15
+Shape: (19, 17)
+
+Number of words: 15
+Number of words added: 7
+Shape: (13, 13)
+
